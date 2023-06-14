@@ -20,3 +20,4 @@ Testing the model:
 ```bash
 python section_test.py --model_path 'model_path/model.pkl'
 ```
+Pretrained model: [download](https://drive.google.com/file/d/1VaJP77HoYU-jNBHAO4d-iJoK6xFGuXUw/view?usp=sharing)
