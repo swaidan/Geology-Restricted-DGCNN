@@ -1,7 +1,6 @@
 import argparse
 from os.path import join as pjoin
 import os
-# os.environ["CUDA_VISIBLE_DEVICES"]="1"
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -12,35 +11,6 @@ from core.loader.data_loader import *
 from core.metrics import runningScore
 from core.utils import np_to_tb
 
-def get_adj_mat(labels, downsample=8):
-    # labels = labels[:, :, ::downsample, ::downsample]
-    labels = F.adaptive_avg_pool2d(labels.float(), (88, 32))
-    labels = torch.round(labels)
-    # print(labels)
-    B, _, H, W = labels.size()
-    adj = torch.zeros((B, H * W, H * W)).to(labels.device)
-    for sample in range(B):
-        x = labels[sample, :, :]
-        x = x.reshape(-1)
-        for i in range(6):
-            count = torch.argwhere(x == i)
-            for ii in count:
-                adj[sample, count, ii] = 1
-    # print(adj)
-    return adj
-
-def laplacian_matrix(A, self_loop=False):
-        '''
-        Computes normalized Laplacian matrix: A (B, N, N)
-        '''
-        if self_loop:
-            A = A + torch.eye(A.size(1), device=A.device).unsqueeze(0)
-        # deg_inv_sqrt = (A + 1e-5).sum(dim=1).clamp(min=0.001).pow(-0.5)
-        deg_inv_sqrt = (torch.sum(A, 1) + 1e-5).pow(-0.5)
-
-        LA = deg_inv_sqrt.unsqueeze(-1) * A * deg_inv_sqrt.unsqueeze(-2)
-
-        return LA
 
 def test(args):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -105,13 +75,9 @@ def test(args):
                 total_iteration = total_iteration + 1
                 image_original, labels_original = images, labels
                 images, labels = images.to(device), labels.to(device)
-                # adj_labels = get_adj_mat(labels=labels)
-                # adj_labels = F.normalize(adj_labels, p=1, dim=2)
-                # adj_labels = laplacian_matrix(adj_labels, self_loop=True)
-
+                
                 outputs = model(images)
-                # outputs, adj = model(images, adj_labels)
-
+                
                 pred = outputs.detach().max(1)[1].cpu().numpy()
                 gt = labels.detach().cpu().numpy()
                 running_metrics_split.update(gt, pred)
