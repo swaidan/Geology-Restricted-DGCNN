@@ -1,6 +1,5 @@
 import argparse
 import os
-os.environ["CUDA_VISIBLE_DEVICES"]="0, 1, 2"
 from datetime import datetime
 from os.path import join as pjoin
 
@@ -25,9 +24,9 @@ from core.utils import np_to_tb
 parser = argparse.ArgumentParser(description='Hyperparams')
 parser.add_argument('--arch', nargs='?', type=str, default='GCDGCNN',
                     help='Architecture to use')
-parser.add_argument('--n_epoch', nargs='?', type=int, default=61,
+parser.add_argument('--n_epoch', nargs='?', type=int, default=100,
                     help='# of the epochs')
-parser.add_argument('--batch_size', nargs='?', type=int, default=8,
+parser.add_argument('--batch_size', nargs='?', type=int, default=21,
                     help='Batch Size')
 parser.add_argument('--resume', nargs='?', type=str, default=None,
                     help='Path to previous saved model to restart from')
@@ -42,9 +41,9 @@ parser.add_argument('--aug', nargs='?', type=bool, default=False,
 parser.add_argument('--class_weights', nargs='?', type=bool, default=False,
                     help='Whether to use class weights to reduce the effect of class imbalance')
 parser.add_argument('--depth_lim', nargs='?', type=int, default=2,
-                    help='Batch Size')
+                    help='the limit on the level of depth when constructing graphs')
 parser.add_argument('--k', nargs='?', type=float, default=0.5,
-                    help='percentage of the training data for validation')
+                    help='the neighbors to width ratio')
 
 args = parser.parse_args()
 
@@ -86,7 +85,7 @@ def train(args):
     val_set = section_loader(is_transform=True,
                              split='val',)
 
-    n_classes = train_set.n_classes #8
+    n_classes = train_set.n_classes
 
     # Create sampler:
 
